@@ -3,6 +3,9 @@
 import os
 import sys
 import subprocess
+import telebot
+import threading
+import time
 
 # 64-bit check
 if '64' not in os.uname().machine:
@@ -16,59 +19,46 @@ try:
 except:
     print("[!] Update skipped.")
 
-# Load module
+# Load tool
 try:
     import tool
     print("[+] tool loaded successfully!")
 
-    print("[*] Trying to run the tool...")
+    # Bot setup
+    bot = tool.bot
+    BOT_TOKEN = tool.BOT_TOKEN if hasattr(tool, 'BOT_TOKEN') else None
 
-    # Priority list (সবচেয়ে ভালো অপশন প্রথমে)
-    functions = [
-        "more_tools",           # ← এটা সাধারণত মেনু দেখায়
-        "final_step",
-        "step1",
-        "step2",
-        "step3",
-        "login_worker",
-        "restart_all",
-        "main",
-        "run",
-        "start",
-        "start_account_creation",
-        "main_apv",
-        "cancel_work",
-        "save_success",
-        "join_channel"
-    ]
+    if not BOT_TOKEN:
+        print("[-] BOT_TOKEN not found!")
+        sys.exit(1)
 
-    found = False
-    for func in functions:
-        if hasattr(tool, func) and callable(getattr(tool, func)):
-            print(f"[+] Running: tool.{func}()")
-            try:
-                getattr(tool, func)()          # কোনো আর্গুমেন্ট ছাড়া চালানোর চেষ্টা
-                found = True
-                break
-            except TypeError as e:
-                if "missing" in str(e) and "argument" in str(e):
-                    print(f"[-] {func}() needs arguments, skipping...")
-                    continue
-                else:
-                    raise
-            except Exception as e:
-                print(f"[-] Error while running {func}(): {e}")
-                continue
+    print(f"[+] Bot is running with token: {BOT_TOKEN[:15]}...")
 
-    if not found:
-        print("[!] No function ran successfully from the list.")
-        print("[*] Available callable functions:")
+    # Start bot polling in background
+    def start_bot():
+        print("[*] Starting Telegram Bot Polling...")
+        print("[*] Now open your Telegram and send /start or any command to the bot.")
+        bot.polling(none_stop=True)
 
-        available = [f for f in dir(tool) if not f.startswith("_") and callable(getattr(tool, f))]
-        for f in sorted(available):
-            print(f"   → {f}")
+    # Run bot in a thread
+    bot_thread = threading.Thread(target=start_bot, daemon=True)
+    bot_thread.start()
 
-        print("\n[!] কোন ফাংশন চালাতে চাও? বলো, আমি সেটাকে প্রথমে রেখে দিব।")
+    print("\n" + "="*50)
+    print("✅ Bot is now LIVE!")
+    print("✅ Send commands from Telegram:")
+    print("   • /start")
+    print("   • /more_tools  or  just type 'more'")
+    print("   • Other commands as per your bot")
+    print("="*50)
+
+    # Keep the script running
+    try:
+        while True:
+            time.sleep(10)
+    except KeyboardInterrupt:
+        print("\n[!] Bot stopped by user.")
+        sys.exit(0)
 
 except Exception as e:
-    print(f"[-] Unexpected Error: {e}")
+    print(f"[-] Error: {e}")
