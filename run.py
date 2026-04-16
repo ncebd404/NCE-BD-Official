@@ -21,53 +21,54 @@ try:
     import tool
     print("[+] tool loaded successfully!")
 
-    # Updated priority list (তোমার available functions অনুসারে সাজানো)
+    print("[*] Trying to run the tool...")
+
+    # Priority list (সবচেয়ে ভালো অপশন প্রথমে)
     functions = [
-        "start_cmd",          # সবচেয়ে সম্ভাব্য
-        "more_tools",
+        "more_tools",           # ← এটা সাধারণত মেনু দেখায়
         "final_step",
-        "login_worker",
         "step1",
         "step2",
         "step3",
+        "login_worker",
+        "restart_all",
         "main",
         "run",
         "start",
-        "main_apv",
         "start_account_creation",
-        "restart_all",
+        "main_apv",
         "cancel_work",
         "save_success",
         "join_channel"
     ]
 
-    print("[*] Searching for runnable function...")
-
     found = False
     for func in functions:
         if hasattr(tool, func) and callable(getattr(tool, func)):
             print(f"[+] Running: tool.{func}()")
-            getattr(tool, func)()
-            found = True
-            break
+            try:
+                getattr(tool, func)()          # কোনো আর্গুমেন্ট ছাড়া চালানোর চেষ্টা
+                found = True
+                break
+            except TypeError as e:
+                if "missing" in str(e) and "argument" in str(e):
+                    print(f"[-] {func}() needs arguments, skipping...")
+                    continue
+                else:
+                    raise
+            except Exception as e:
+                print(f"[-] Error while running {func}(): {e}")
+                continue
 
     if not found:
-        print("[!] No runnable function found from priority list!")
-        print("[*] All available callable functions:")
+        print("[!] No function ran successfully from the list.")
+        print("[*] Available callable functions:")
 
-        available = []
-        for f in dir(tool):
-            if not f.startswith("_") and callable(getattr(tool, f)):
-                available.append(f)
+        available = [f for f in dir(tool) if not f.startswith("_") and callable(getattr(tool, f))]
+        for f in sorted(available):
+            print(f"   → {f}")
 
-        if available:
-            for f in sorted(available):
-                print(f"   → {f}")
-            print("\n[!] কোন ফাংশন চালাতে চাও? বলো, আমি run.py তে প্রথমে সেটা রাখব।")
-        else:
-            print("   (No callable functions found)")
+        print("\n[!] কোন ফাংশন চালাতে চাও? বলো, আমি সেটাকে প্রথমে রেখে দিব।")
 
-except ImportError as e:
-    print(f"[-] Import Error: {e}")
 except Exception as e:
-    print(f"[-] Error: {e}")
+    print(f"[-] Unexpected Error: {e}")
