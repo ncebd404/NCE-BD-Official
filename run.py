@@ -44,13 +44,13 @@ try:
     bot_thread = threading.Thread(target=start_bot, daemon=True)
     bot_thread.start()
 
-    print("\n" + "="*50)
+    print("\n" + "="*45)
     print("✅ Bot is now LIVE!")
     print("✅ Send commands from Telegram:")
     print("   • /start")
     print("   • /more_tools  or  just type 'more'")
     print("   • Other commands as per your bot")
-    print("="*50)
+    print("="*45)
 
     # Keep the script running
     try:
